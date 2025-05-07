@@ -7,26 +7,17 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <style>
     body {
-      background-color: #f5f5f5;
-      background-image: radial-gradient(circle at center, #e0e0e0 1px, transparent 1px),
-                        radial-gradient(circle at center, #e0e0e0 1px, transparent 1px);
-      background-size: 30px 30px;
-      background-position: 0 0, 15px 15px;
-    }
-
-    .container {
-      background-color: white;
-      border-radius: 15px;
-      padding: 30px;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-      margin-top: 20px;
+      background-image: url('assets/bg-9.webp'); /* 替换为你的背景图路径 */
+      background-size: cover;
+      background-repeat: no-repeat;
+      background-attachment: fixed;
+      background-position: center;
     }
 
     .character-img {
-      max-width: 400px;
+      max-width: 500px;
       border-radius: 10px;
-      margin: 20px auto;
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+      margin: 20px 0;
     }
     
     @font-face {
@@ -40,49 +31,25 @@
       font-family: 'Luna', sans-serif;
       text-align: center;
       margin-bottom: 30px;
-      color: #4a4a4a;
-      text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+      color: #2c3e50;
     }
 
     .character-result {
       margin-top: 30px;
-      padding: 25px;
+      padding: 20px;
       background-color: #f8f9fa;
       border-radius: 10px;
-      border-left: 5px solid #6c757d;
     }
 
     .btn-primary {
-      background-color: #6c757d;
-      border-color: #6c757d;
+      background-color: #2c3e50;
+      border-color: #2c3e50;
       margin-top: 20px;
-      padding: 10px 25px;
-      font-weight: bold;
-      display: block;
-      margin-left: auto;
-      margin-right: auto;
     }
 
     .btn-primary:hover {
-      background-color: #5a6268;
-      border-color: #545b62;
-    }
-
-    .form-check-label {
-      padding-left: 5px;
-    }
-
-    .form-check-input {
-      margin-top: 0.3em;
-    }
-
-    .trait-section {
-      margin-bottom: 15px;
-    }
-
-    hr {
-      border-top: 2px dashed #6c757d;
-      margin: 30px 0;
+      background-color: #1a252f;
+      border-color: #1a252f;
     }
   </style>
 </head>
@@ -91,30 +58,32 @@
     <h1>Which Ghibli Character Are You?</h1>
     
     <div class="container">
-      <h3 class="mb-4">Select your traits:</h3>
       <div class="row">
-        <div class="col-md-4 trait-section" v-for="(traitGroup, index) in groupedTraits" :key="index">
-          <div class="form-check" v-for="trait in traitGroup" :key="trait">
-            <input class="form-check-input" type="checkbox" :id="trait" :value="trait" v-model="selectedTraits">
-            <label class="form-check-label" :for="trait">
-              {{ trait }}
-            </label>
+        <div class="col-12">
+          <h3>Select the traits that describe you:</h3>
+          <div class="row">
+            <div class="col-md-4" v-for="trait in availableTraits" :key="trait">
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" :id="trait" :value="trait" v-model="selectedTraits">
+                <label class="form-check-label" :for="trait">
+                  {{ trait }}
+                </label>
+              </div>
+            </div>
+          </div>
+          
+          <button class="btn btn-primary" @click="findCharacter">Reveal My Character</button>
+          
+          <div v-if="result" class="character-result text-center">
+            <h2>You are most like {{ result.name }}</h2>
+            <img :src="result.image" :alt="result.name" class="character-img">
+            <p>{{ result.description }}</p>
+          </div>
+          
+          <div v-else-if="noResult" class="alert alert-warning mt-3">
+            Hmm...Either you didn't select any traits or we couldn't find a match. Please try again
           </div>
         </div>
-      </div>
-      
-      <hr>
-      
-      <button class="btn btn-primary" @click="findCharacter">Reveal My Character</button>
-      
-      <div v-if="result" class="character-result text-center">
-        <h2>You are most like {{ result.name }}!</h2>
-        <img :src="result.image" :alt="result.name" class="character-img">
-        <p class="lead">{{ result.description }}</p>
-      </div>
-      
-      <div v-else-if="noResult" class="alert alert-warning mt-3 text-center">
-        Hmm...Either you didn't select any traits or we couldn't find a match. Please try again
       </div>
     </div>
   </div>
@@ -124,10 +93,11 @@ Vue.createApp({
   data() {
     return {
       availableTraits: [
-        'Ambitious', 'Kind', 'Protective', 'Independent', 
-        'Empathetic', 'Mysterious', 'Brave', 'Quiet',
-        'Mischievous', 'Dreamy', 'Hardworking', 'Curious',
-        'Adventurous', 'Loyal', 'Funny', 'Witty'
+        'Kind', 'Quiet', 'Protective', 'Empathetic', 
+        'Brave', 'Adventurous', 'Independent', 'Hardworking',
+        'Curious', 'Mischievous', 'Witty', 'Dreamy',
+        'Funny', 'Magical', 'Loyal', 'Ambitious',
+        'Mysterious', 'Strong', 'Gentle', 'Creative'
       ],
       selectedTraits: [],
       characters: [
@@ -151,7 +121,7 @@ Vue.createApp({
         },
         {
           name: 'Calcifer',
-          traits: ['Mischievous', 'Protective', 'Witty', 'Funny'],
+          traits: ['Mischievous', 'Protective', 'Witty'],
           image: 'assets/calcifer.jpeg',
           description: 'Calcifer is a fiery, funny spirit with a strong personality and a warm heart... literally!'
         },
@@ -182,17 +152,6 @@ Vue.createApp({
       ],
       result: null,
       noResult: false
-    }
-  },
-  computed: {
-    groupedTraits() {
-      // Split traits into groups of 5-6 for better layout
-      const groups = [];
-      const groupSize = 6;
-      for (let i = 0; i < this.availableTraits.length; i += groupSize) {
-        groups.push(this.availableTraits.slice(i, i + groupSize));
-      }
-      return groups;
     }
   },
   methods: {
